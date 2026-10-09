@@ -1,0 +1,29 @@
+# Залежності
+node_modules/
+
+# Збірка
+dist/
+build/
+
+# Середовище та секрети
+.env
+.env.local
+*.env
+
+# Логи та кеші
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+.eslintcache
+.turbo/
+
+# Покриття тестів
+coverage/
+
+# Системні файли та IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
