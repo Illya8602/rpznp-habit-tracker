@@ -14,11 +14,11 @@ format-check:
 smoke:
 	npm run test:smoke
 
-check: format-check lint typecheck smoke
-	@echo "All engineering checks passed successfully."
-
 build:
 	npm run build
 
+check: format-check lint typecheck build smoke
+	@echo "All engineering checks passed successfully."
+
 run: build
-	node dist/index.js
+	GIT_SHA=$$(git rev-parse --short HEAD 2>/dev/null || echo "dev-local") node dist/src/index.js
