@@ -4,8 +4,10 @@ import { requestContextStorage } from './shared/context.js';
 import { logger } from './shared/logger.js';
 import { DomainError } from './domain/errors.js';
 import { InMemoryHabitRepository } from './domain/in-memory-habit.repository.js';
+import { PostgresHabitRepository } from './domain/postgres-habit.repository.js';
 import { HabitService } from './domain/habit.service.js';
 import { HabitController } from './http/habit.controller.js';
+import { IHabitRepository } from './domain/habit.repository.js';
 
 const fastify = Fastify({ disableRequestLogging: true });
 
@@ -35,23 +37,33 @@ fastify.setErrorHandler((error: Error, req: FastifyRequest, reply: FastifyReply)
   });
 });
 
-const habitRepo = new InMemoryHabitRepository();
-const habitService = new HabitService(habitRepo);
-const habitController = new HabitController(habitService);
-
-fastify.post<{ Body: { userId: string; title: string; frequency: string } }>(
-  '/habits',
-  habitController.createHabit,
-);
-fastify.get<{ Querystring: { userId: string } }>('/habits', habitController.getHabits);
-fastify.post<{ Params: { id: string }; Body: { notes?: string } }>(
-  '/habits/:id/logs',
-  habitController.logCompletion,
-);
-fastify.get<{ Params: { id: string } }>('/habits/:id/analytics', habitController.getAnalytics);
+let habitRepo: IHabitRepository = new InMemoryHabitRepository();
 
 const start = async () => {
   try {
+    if (process.env.USE_POSTGRES === 'true') {
+      const pgRepo = new PostgresHabitRepository();
+      await pgRepo.init();
+      habitRepo = pgRepo;
+      logger.info('Using PostgreSQL repository');
+    } else {
+      logger.info('Using InMemory repository');
+    }
+
+    const habitService = new HabitService(habitRepo);
+    const habitController = new HabitController(habitService);
+
+    fastify.post<{ Body: { userId: string; title: string; frequency: string } }>(
+      '/habits',
+      habitController.createHabit,
+    );
+    fastify.get<{ Querystring: { userId: string } }>('/habits', habitController.getHabits);
+    fastify.post<{ Params: { id: string }; Body: { notes?: string } }>(
+      '/habits/:id/logs',
+      habitController.logCompletion,
+    );
+    fastify.get<{ Params: { id: string } }>('/habits/:id/analytics', habitController.getAnalytics);
+
     const port = Number(process.env.PORT) || 3000;
     await fastify.listen({ port, host: '0.0.0.0' });
     logger.info(`Server running at http://localhost:${port}`);
