@@ -27,3 +27,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Stryker mutation testing
+.stryker-tmp/
+reports/
