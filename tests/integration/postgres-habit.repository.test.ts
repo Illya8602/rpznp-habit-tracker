@@ -47,6 +47,9 @@ describe('PostgresHabitRepository & HabitService integration', () => {
     const analytics = await service.getAnalytics(habit.id);
     expect(analytics.totalCompletions).toBe(1);
     expect(analytics.lastCompletedAt).toBeInstanceOf(Date);
+    expect(analytics.currentStreak).toBe(1);
+    expect(analytics.completedToday).toBe(true);
+    expect(analytics.weeklyCompletionRatio).toBeCloseTo(1 / 7, 5);
   });
 
   it('throws NotFoundError when logging or fetching analytics for missing habit', async () => {

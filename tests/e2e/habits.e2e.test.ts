@@ -62,8 +62,14 @@ describe('Habits HTTP API E2E', () => {
       url: `/habits/${created.id}/analytics`,
     });
     expect(analyticsRes.statusCode).toBe(200);
-    const analytics = analyticsRes.json() as { totalCompletions: number };
+    const analytics = analyticsRes.json() as {
+      totalCompletions: number;
+      currentStreak: number;
+      completedToday: boolean;
+    };
     expect(analytics.totalCompletions).toBe(1);
+    expect(analytics.currentStreak).toBe(1);
+    expect(analytics.completedToday).toBe(true);
   });
 
   it('returns 404 when logging completion for non-existent habit', async () => {
