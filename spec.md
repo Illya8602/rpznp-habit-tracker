@@ -50,3 +50,23 @@ GROUP BY h.id, h.title;
 - Усі 4 API сценарії працюють спершу через In-Memory сховище, потім через PostgreSQL.
 - Кожен лог запиту містить processId без його передачі через параметри функцій (використовується AsyncLocalStorage).
 - Виникнення помилки обробляється єдиним глобальним setErrorHandler.
+
+## Task 3 — Testing & Mutation Testing Specification
+
+### 1. Unit Testing Target & Coverage
+
+- Target module: src/domain/streak-calculator.ts (pure streak and weekly progress calculation).
+- Pure logic: no DB, network, filesystem, or Date.now() / new Date() inside pure functions; now: Date is passed explicitly.
+- Target: 100% branch coverage and mutation testing with @stryker-mutator/core.
+
+### 2. Integration & E2E Testing
+
+- Integration (tests/integration): tests PostgresHabitRepository and HabitService against real PostgreSQL initialized via repo.init(), truncating habit_logs, habits between tests.
+- E2E (tests/e2e): tests HTTP routes (POST /habits, GET /habits, POST /habits/:id/logs, GET /habits/:id/analytics, plus 404 / 409) via Fastify inject() backed by real PostgreSQL.
+
+### 3. Acceptance Criteria
+
+- Isolated test PostgreSQL on port 5436 (habit_tracker_test).
+- Single command make test starts test DB, waits for readiness, and runs unit + integration + e2e tests.
+- Running make test twice consecutively passes without failures or state leakage.
+- Single command make mutation runs Stryker scoped strictly to src/domain/streak-calculator.ts.
